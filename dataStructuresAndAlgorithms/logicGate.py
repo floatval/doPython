@@ -18,12 +18,15 @@ class LogicGate:
         self.output = None
 
     def getLabel(self):
+        """
+        获取标签
+        """
         return self.label
 
     def getOutput(self):
         # 此处是用了继承的，作用是执行所有类型的逻辑门
         # 且所有的逻辑门类中都要有逻辑执行(performGateLogic) 函数
-        self.output = self.performGateLogic()
+        self.output = self.performGateLogic()  # 此处若检查到语法错误,请忽略
         return self.output
 
 
@@ -41,15 +44,21 @@ class BinaryGate(LogicGate):
         """
         获取逻辑门中的引脚Ａ的输入状态
         """
-        return int(input("请输入逻辑门引脚A的输入（0/1）" + self.getLabel() +
-                         "-->"))
+        if self.pinA is None:
+            return int(input("请输入逻辑门引脚A的输入（0/1）" + self.getLabel() +
+                             "-->"))
+        else:
+            return self.pinA.getFrom().getOutput()
 
     def getPinB(self):
         """
         获取逻辑门中的引脚Ｂ的输入状态
         """
-        return int(input("请输入逻辑门引脚B的输入（0/1）" + self.getLabel() +
-                         "-->"))
+        if self.pinB is None:
+            return int(input("请输入逻辑门引脚B的输入（0/1）" + self.getLabel() +
+                             "-->"))
+        else:
+            return self.pinB.getFrom().getOutput()
 
 
 class UnaryGate(LogicGate):
@@ -128,9 +137,52 @@ class NorGate(UnaryGate):
             return a
 
 
+class Connector:
+    """
+    逻辑组合门
+    """
+
+    def __init__(self, fgate, tgate):
+        self.fromgate = fgate
+        self.togate = tgate
+        tgate.setNextPin(self)
+
+    def get_from(self):
+        """
+        输入门
+        """
+        return self.fromgate
+
+    def get_to(self):
+        """
+        输出门
+        """
+        return self.togate
+
+    def setNextPin(self, soruce):
+        """
+        接入引脚
+        """
+        if self.pinA is None:
+            self.pinA = soruce
+        else:
+            if self.pinB is None:
+                self.pinB = soruce
+            else:
+                raise RuntimeError("Error: 无空引脚")
+
+
 g1 = AndGate("G-And")
 print(g1.getOutput())
+print(type(g1).__mro__)
 g2 = OrGate("G-Or")
 print(g2.getOutput())
 g3 = NorGate("G-Nor")
 print(g3.getOutput())
+c1 = Connector(g1, g2)
+print(type(c1).__mro__)
+# print(c1)
+# c2 = Connector(g1, g3)
+# print(c2)
+# c3 = Connector(g2, g3)
+# print(c3)
